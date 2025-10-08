@@ -25,7 +25,7 @@ class AppDatabase {
 
     if (!exists) {
       print('Copying prebuilt database from assets...');
-      ByteData data = await rootBundle.load('assets/database.db3');
+      ByteData data = await rootBundle.load('packages/nigeria_lgas/assets/database.db3');
       List<int> bytes =
       data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       await File(dbPath).writeAsBytes(bytes, flush: true);

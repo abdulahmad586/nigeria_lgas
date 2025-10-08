@@ -22,9 +22,7 @@ Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  nigeria_lgas:
-    git:
-      url: https://github.com/abdulahmad586/nigeria_lgas.git
+  nigeria_lgas: ^1.0.0+2
 ```
 
 Then, run:

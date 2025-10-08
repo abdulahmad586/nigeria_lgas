@@ -8,8 +8,11 @@ class PlacesSelector extends StatefulWidget {
   final Function(String?, String?, String?)? onSelected;
   final InputDecoration? inputDecoration;
   final double spacing;
+  final bool hideState;
+  final bool hideLGA;
+  final bool hideWard;
 
-  const PlacesSelector({super.key, this.state, this.onSelected, this.lga, this.ward, this.inputDecoration, this.spacing=10});
+  const PlacesSelector({super.key, this.state, this.onSelected, this.lga, this.ward, this.inputDecoration, this.spacing=10, this.hideState=false, this.hideLGA=false, this.hideWard=false});
 
   @override
   State<PlacesSelector> createState() => _PlacesSelectorState();
@@ -33,7 +36,17 @@ class _PlacesSelectorState extends State<PlacesSelector> {
   @override
   void initState() {
     super.initState();
+    _selectedState = widget.state;
+    _selectedLga = widget.lga;
+    _selectedWard = widget.ward;
     _loadStates();
+    if(_selectedState != null){
+      _loadLgas(_selectedState!);
+    }
+    if(_selectedLga != null){
+      _loadWards(_selectedLga!);
+    }
+
   }
 
   Future<void> _loadStates() async {
@@ -81,7 +94,7 @@ class _PlacesSelectorState extends State<PlacesSelector> {
     return Column(
       spacing: widget.spacing,
         children: [
-          DropdownButtonFormField<String>(
+          if(!widget.hideState)DropdownButtonFormField<String>(
             isExpanded: true,
             value: _selectedState,
             decoration: widget.inputDecoration,
@@ -94,6 +107,12 @@ class _PlacesSelectorState extends State<PlacesSelector> {
               child: Text(state),
             ))
                 .toList(),
+            validator: (value) {
+              if (value == null) {
+                return 'Please select a state';
+              }
+              return null;
+            },
             onChanged: (value) {
               if (value == null) return;
               setState(() {
@@ -102,7 +121,7 @@ class _PlacesSelectorState extends State<PlacesSelector> {
               _loadLgas(value);
             },
           ),
-          DropdownButtonFormField<String>(
+          if(!widget.hideLGA)DropdownButtonFormField<String>(
             isExpanded: true,
             value: _selectedLga,
             decoration: widget.inputDecoration,
@@ -116,6 +135,12 @@ class _PlacesSelectorState extends State<PlacesSelector> {
               child: Text(lga),
             ))
                 .toList(),
+            validator: (value) {
+              if (value == null) {
+                return 'Please select an LGA';
+              }
+              return null;
+            },
             onChanged: (value) {
               if (value == null) return;
               setState(() {
@@ -125,7 +150,7 @@ class _PlacesSelectorState extends State<PlacesSelector> {
             },
           ),
           /// WARD DROPDOWN
-          DropdownButtonFormField<String>(
+          if(!widget.hideWard)DropdownButtonFormField<String>(
             isExpanded: true,
             value: _selectedWard,
             decoration: widget.inputDecoration,
@@ -144,6 +169,12 @@ class _PlacesSelectorState extends State<PlacesSelector> {
               });
               widget.onSelected?.call(_selectedState, _selectedLga, _selectedWard);
             },
+            validator: (value) {
+              if (value == null) {
+                return 'Please select a ward';
+              }
+              return null;
+            }
           ),
         ],
     );
