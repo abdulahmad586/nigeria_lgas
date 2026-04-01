@@ -1,146 +1,152 @@
 # Nigeria Places Selector
 
-A **Flutter widget** that provides an intuitive cascading dropdown selector for **Nigerian States**, **Local Government Areas (LGAs)**, and **Wards** — all powered by a simple query interface.
+A **Flutter utility + widget package** for working with Nigerian
+administrative locations: **States → LGAs → Wards**.
 
-This widget is ideal for any Flutter app that requires users to select hierarchical administrative locations within Nigeria, such as registration forms, address pickers, or survey apps.
+This package can be used in two ways: 1. Using the ready-made UI widget
+(`PlacesSelector`) 2. Using the query class (`NigeriaPlacesQuery`)
+directly (no UI)
 
----
+------------------------------------------------------------------------
 
 ## ✨ Features
 
-- Simple 3-step cascading selector: **State → LGA → Ward**
-- Asynchronous data fetching
-- Customizable spacing and input decoration
-- Reusable and easy to integrate
-- Comes with built-in support for all Nigerian states, LGAs, and wards
+-   Access all Nigerian States, LGAs, and Wards
+-   Lightweight SQLite-backed queries
+-   Can be used **with or without UI**
+-   Async support
+-   Clean API
 
----
+------------------------------------------------------------------------
 
 ## 📦 Installation
 
-Add this package to your `pubspec.yaml`:
+Add to your `pubspec.yaml`:
 
-```yaml
+``` yaml
 dependencies:
   nigeria_lgas: ^1.0.0+2
 ```
 
-Then, run:
+Run:
 
-```bash
+``` bash
 flutter pub get
 ```
 
----
+------------------------------------------------------------------------
 
-## 🚀 Usage
+# 🚀 Usage WITHOUT the Widget (Query Only)
 
-### 1️⃣ Import the widget
-```dart
-import 'package:nigeria_lgas/places_selector.dart';
+If you don't want the dropdown UI (maybe you're building your own custom
+UI or API layer), use the `NigeriaPlacesQuery` class directly.
+
+------------------------------------------------------------------------
+
+## 1️⃣ Import
+
+``` dart
+import 'package:nigeria_lgas/nga_places_query.dart';
 ```
 
-### 2️⃣ Use it in your widget tree
-```dart
+------------------------------------------------------------------------
+
+## 2️⃣ Initialize
+
+``` dart
+final query = NigeriaPlacesQuery();
+```
+
+------------------------------------------------------------------------
+
+## 3️⃣ Fetch States
+
+``` dart
+final states = await query.getStates();
+
+print(states);
+// Example: ['Abuja', 'Kaduna', 'Lagos', ...]
+```
+
+------------------------------------------------------------------------
+
+## 4️⃣ Fetch LGAs (by State)
+
+``` dart
+final lgas = await query.getLGAs('Kaduna');
+
+print(lgas);
+// Example: ['Zaria', 'Sabon Gari', ...]
+```
+
+------------------------------------------------------------------------
+
+## 5️⃣ Fetch Wards (by LGA)
+
+``` dart
+final wards = await query.getWards('Zaria');
+
+print(wards);
+// Example: ['Wusasa', 'Tudun Wada', ...]
+```
+
+------------------------------------------------------------------------
+
+## 6️⃣ Fetch Wards with State Filter (Recommended)
+
+Some LGAs exist in multiple states, so it's safer to include the state:
+
+``` dart
+final wards = await query.getWards(
+  'Zaria',
+  state: 'Kaduna',
+);
+```
+
+------------------------------------------------------------------------
+
+## 🧠 Full Example (No UI)
+
+``` dart
+void loadLocations() async {
+  final query = NigeriaPlacesQuery();
+
+  final states = await query.getStates();
+
+  final lgas = await query.getLGAs(states.first);
+
+  final wards = await query.getWards(
+    lgas.first,
+    state: states.first,
+  );
+
+  print(states);
+  print(lgas);
+  print(wards);
+}
+```
+
+------------------------------------------------------------------------
+
+## ⚠️ Notes
+
+-   Always prefer passing `state` when fetching wards to avoid
+    ambiguity.
+-   Queries are asynchronous, so use `await`.
+-   Data comes preloaded from the package database.
+
+------------------------------------------------------------------------
+
+# 🎨 Usage WITH Widget (Optional)
+
+``` dart
+import 'package:nigeria_lgas/places_selector.dart';
+
 PlacesSelector(
-  spacing: 10,
-  inputDecoration: const InputDecoration(
-    border: OutlineInputBorder(),
-  ),
   onSelected: (state, lga, ward) {
-    print('Selected: $state > $lga > $ward');
+    print('$state > $lga > $ward');
   },
 )
-```
-
-### 3️⃣ Example App
-Below is a minimal example demonstrating usage inside a `MaterialApp`:
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:nigeria_lgas/places_selector.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Nigeria Places Selector Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: PlacesSelector(
-              spacing: 10,
-              inputDecoration: InputDecoration(
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-```
-
----
-
-## 🧠 API Reference
-
-| Parameter | Type | Description |
-|------------|------|-------------|
-| `state` | `String?` | Preselected state value |
-| `lga` | `String?` | Preselected LGA value |
-| `ward` | `String?` | Preselected ward value |
-| `onSelected` | `Function(String?, String?, String?)?` | Callback when all values are selected |
-| `inputDecoration` | `InputDecoration?` | Custom decoration for the dropdown fields |
-| `spacing` | `double` | Vertical spacing between dropdowns (default: `10`) |
-
----
-
-## 🗂 Directory Structure
-
-```
-lib/
-│
-├── nga_places_query.dart      # Data access for states, LGAs, and wards
-└── places_selector.dart       # UI widget with cascading dropdowns
-```
-
----
-
-## ⚙️ How It Works
-
-The `PlacesSelector` widget uses the `NigeriaPlacesQuery` class to:
-1. Fetch all **States** in Nigeria.
-2. Load **LGAs** when a State is selected.
-3. Load **Wards** when an LGA is selected.
-
-It updates the dropdowns dynamically and returns the selected values through the `onSelected` callback.
-
----
-
-## 🧩 Example Output
-
-When used, the widget renders three dropdowns:
-
-```
-[ Select State  ▼ ]
-[ Select LGA    ▼ ]
-[ Select Ward   ▼ ]
-```
-
-When the user selects all three, the callback returns:
-```dart
-('Kaduna', 'Zaria', 'Wusasa')
 ```
 
 ---
